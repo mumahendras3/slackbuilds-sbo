@@ -1,0 +1,11 @@
+--- a/meson.build	2022-09-30 16:33:09.220294287 +0700
++++ b/meson.build	2022-09-30 16:33:52.240461390 +0700
+@@ -8,7 +8,7 @@
+ git_version = []
+ git = find_program('git', required: false)
+ if git.found()
+-  git_version = run_command(git, 'describe', '--abbrev=4', '--dirty', check: true).stdout().strip().split('-')
++  git_version = run_command(git, 'describe', '--abbrev=4', '--dirty', check: false).stdout().strip().split('-')
+ endif
+ 
+ # libtool versioning
