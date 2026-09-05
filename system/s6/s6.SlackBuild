@@ -28,7 +28,7 @@
 cd $(dirname $0) ; CWD=$(pwd)
 
 PRGNAM=s6
-VERSION=${VERSION:-2.14.0.1}
+VERSION=${VERSION:-2.15.1.0}
 BUILD=${BUILD:-1}
 TAG=${TAG:-_SBo}
 PKGTYPE=${PKGTYPE:-tgz}
@@ -108,7 +108,12 @@ CXXFLAGS="$SLKCFLAGS" \
   --with-lib=/usr/lib${LIBDIRSUFFIX}/execline \
   $LIBS_CONF
 
-make
+# Static linking against libskarnet.a pulls in skalibs' pthread_mutex_tailock.o,
+# which references pthread_mutex_timedlock(); on glibc < 2.34 that symbol lives
+# in libpthread, so -lpthread must be appended to the link. $(LDLIBS) is placed
+# last on the linker command line by s6's Makefile, which is exactly where it
+# needs to be.
+make LDLIBS="-lpthread"
 make strip
 make install DESTDIR=$PKG
 
