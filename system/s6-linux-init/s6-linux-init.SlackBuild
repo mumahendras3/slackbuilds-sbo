@@ -65,22 +65,6 @@ else
   LIBDIRSUFFIX=""
 fi
 
-# By default, only static libraries are built. If you want to also build the
-# shared libraries, just pass BUILD_SHARED=yes to this script.
-BUILD_STATIC=${BUILD_STATIC:-yes}
-BUILD_SHARED=${BUILD_SHARED:-no}
-[ "$BUILD_STATIC" = "no" ] && LIBS_CONF="--disable-static"
-[ "$BUILD_SHARED" = "yes" ] && LIBS_CONF="--enable-shared $LIBS_CONF"
-
-# By default, all binaries are linked against the static versions of the
-# skarnet.org libraries. Pass LINK_SHARED=yes to link the binaries against the
-# shared versions of the skarnet.org libraries. If you only built the shared
-# versions of the skarnet.org libraries, the binaries will be linked against
-# shared libraries automatically, as though LINK_SHARED=yes is passed to this
-# script.
-LINK_SHARED=${LINK_SHARED:-no}
-[ "$LINK_SHARED" = "yes" ] && LIBS_CONF="--disable-allstatic $LIBS_CONF"
-
 # By default, all skeleton files from s6-linux-init are placed under
 # /etc/s6-linux-init/skel. Pass SKEL_DIR=/path/to/directory to this script if
 # you want to place them somewhere else.
@@ -118,23 +102,19 @@ CXXFLAGS="$SLKCFLAGS" \
   --dynlibdir=/lib${LIBDIRSUFFIX} \
   --bindir=/sbin \
   --libexecdir=/usr/libexec \
-  --libdir=/usr/lib${LIBDIRSUFFIX}/s6-linux-init \
   --includedir=/usr/include \
   --skeldir=${SKEL_DIR} \
   --tmpfsdir=${TMPFS_DIR} \
   --scandir=${SCAN_DIR} \
   --with-sysdeps=/usr/lib${LIBDIRSUFFIX}/skalibs/sysdeps \
-  --with-lib=/usr/lib${LIBDIRSUFFIX}/skalibs \
-  --with-lib=/usr/lib${LIBDIRSUFFIX}/execline \
-  --with-lib=/usr/lib${LIBDIRSUFFIX}/s6 \
-  $LIBS_CONF
+  --with-dynlib=/lib${LIBDIRSUFFIX} \
+  --pkgconfdir=/usr/lib${LIBDIRSUFFIX}/pkgconfig \
+  --enable-pkgconfig \
+  --enable-shared \
+  --disable-static \
+  --disable-allstatic
 
-# Static linking against libskarnet.a pulls in skalibs' pthread_mutex_tailock.o,
-# which references pthread_mutex_timedlock(); on glibc < 2.34 that symbol lives
-# in libpthread, so -lpthread must be appended to the link. $(LDLIBS) is placed
-# last on the linker command line by s6-linux-init's Makefile, which is exactly
-# where it needs to be.
-make LDLIBS="-lpthread"
+make
 make strip
 make install DESTDIR=$PKG
 
